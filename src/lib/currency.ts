@@ -81,11 +81,21 @@ function countryFromTimeZone(): string | null {
   }
 }
 
+/** La interfaz es en espanol, asi que el formato tambien: solo la region varia. */
 export function detectLocale(): DetectedLocale {
-  const locale = (typeof navigator !== 'undefined' && navigator.language) || 'en-US'
-  const country = countryFromTimeZone() ?? countryFromLanguage(locale)
+  const language = (typeof navigator !== 'undefined' && navigator.language) || 'en-US'
+  const country = countryFromTimeZone() ?? countryFromLanguage(language)
   const currency = (country && COUNTRY_CURRENCY[country]) || 'USD'
-  return { country, currency, locale }
+  return { country, currency, locale: country ? `es-${country}` : 'es' }
+}
+
+export function currencyName(currency: string, locale: string): string {
+  try {
+    const name = new Intl.DisplayNames([locale], { type: 'currency' }).of(currency)
+    return name ?? currency
+  } catch {
+    return currency
+  }
 }
 
 export const CURRENCIES: string[] = Array.from(new Set(Object.values(COUNTRY_CURRENCY))).sort()
@@ -104,7 +114,11 @@ export function formatMoney(amount: number, currency: string, locale: string): s
 
 export function currencySymbol(currency: string, locale: string): string {
   try {
-    const parts = new Intl.NumberFormat(locale, { style: 'currency', currency }).formatToParts(0)
+    const parts = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      currencyDisplay: 'narrowSymbol',
+    }).formatToParts(0)
     return parts.find((p) => p.type === 'currency')?.value ?? currency
   } catch {
     return currency

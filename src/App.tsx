@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { BackupPanel } from './components/BackupPanel'
 import { CurrencyPicker } from './components/CurrencyPicker'
 import { ExpenseForm } from './components/ExpenseForm'
 import { ExpenseList } from './components/ExpenseList'
@@ -10,7 +11,7 @@ import { useCurrency, useExpenses } from './lib/storage'
 import type { Period } from './types'
 
 export default function App() {
-  const { expenses, addExpense, removeExpense } = useExpenses()
+  const { expenses, addExpense, removeExpense, replaceAll } = useExpenses()
   const { currency, setCurrency, locale, country } = useCurrency()
   const [period, setPeriod] = useState<Period>('day')
 
@@ -24,11 +25,10 @@ export default function App() {
   return (
     <div className="min-h-dvh bg-slate-50 text-slate-900">
       <div className="mx-auto w-full max-w-xl px-4 pb-16 pt-6">
-        <header className="flex items-center justify-between">
+        <header>
           <h1 className="text-xl font-bold tracking-tight">
             My <span className="text-emerald-600">Pocket</span>
           </h1>
-          <CurrencyPicker currency={currency} country={country} onChange={setCurrency} />
         </header>
 
         <section className="mt-4 rounded-2xl bg-slate-900 p-5 text-white">
@@ -59,6 +59,24 @@ export default function App() {
             currency={currency}
             locale={locale}
             onRemove={removeExpense}
+          />
+        </div>
+
+        <div className="mt-4">
+          <CurrencyPicker
+            currency={currency}
+            locale={locale}
+            country={country}
+            onChange={setCurrency}
+          />
+        </div>
+
+        <div className="mt-4">
+          <BackupPanel
+            expenses={expenses}
+            currency={currency}
+            onImport={replaceAll}
+            onCurrency={setCurrency}
           />
         </div>
 
